@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using IDServer.Models;
 
 using IDServer.Attributes;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IDServer.UI
 {
@@ -539,5 +540,7 @@ namespace IDServer.UI
         private void ProcessLoginCallbackForSaml2p(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
         {
         }
-    }
+
+
+  }
 }
