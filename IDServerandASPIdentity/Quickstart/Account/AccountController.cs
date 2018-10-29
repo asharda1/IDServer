@@ -258,6 +258,7 @@ namespace IDServer.UI
     /*****************************************/
     private async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl) {
       var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
+      string clientId = "";
       if (context?.IdP != null)
       {
         // this is meant to short circuit the UI and only trigger the one external IdP
@@ -287,7 +288,7 @@ namespace IDServer.UI
         if (client != null)
         {
           allowLocal = client.EnableLocalLogin;
-
+          clientId = client.ClientId;
           if (client.IdentityProviderRestrictions != null && client.IdentityProviderRestrictions.Any())
           {
             providers = providers.Where(provider => client.IdentityProviderRestrictions.Contains(provider.AuthenticationScheme)).ToList();
@@ -300,6 +301,7 @@ namespace IDServer.UI
         EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
         ReturnUrl = returnUrl,
         Username = context?.LoginHint,
+        ClientId = clientId,
         ExternalProviders = providers.ToArray()
       };
     }
