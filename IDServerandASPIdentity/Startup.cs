@@ -23,7 +23,8 @@ namespace IDServer
 {
   public class Startup
   {
-    public Startup(IConfiguration configuration) {
+    public Startup(IConfiguration configuration)
+    {
       Configuration = configuration;
     }
 
@@ -33,7 +34,8 @@ namespace IDServer
     }
 
     // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services) {
+    public void ConfigureServices(IServiceCollection services)
+    {
       services.AddDbContext<ApplicationDbContext>(options =>
           options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
       var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
@@ -45,41 +47,49 @@ namespace IDServer
       // Add application services.
       services.AddTransient<IEmailSender, EmailSender>();
       services.AddTransient<IProfileService, ProfileService>();
-
       services.AddMvc();
       // configure identity server with in-memory stores, keys, clients and scopes
       services.AddIdentityServer()
-  //       .AddDeveloperSigningCredential()
-  .AddSigningCredential(new X509Certificate2(Configuration.GetValue<string>("Certificate:Path"), Configuration.GetValue<string>("Certificate:Password")))
-    // this adds the config data from DB (clients, resources)
-    .AddAspNetIdentity<ApplicationUser>()
+         //  .AddDeveloperSigningCredential()
+         .AddSigningCredential(new X509Certificate2(Configuration.GetValue<string>("Certificate:Path"), Configuration.GetValue<string>("Certificate:Password")))
+         // this adds the config data from DB (clients, resources)
+         .AddAspNetIdentity<ApplicationUser>()
 
-    .AddConfigurationStore(options => {
-      options.ConfigureDbContext = builder =>
-          builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-              sql => sql.MigrationsAssembly(migrationsAssembly));
-    })
-    // this adds the operational data from DB (codes, tokens, consents)
-    .AddOperationalStore(options => {
-      options.ConfigureDbContext = builder =>
-          builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-              sql => sql.MigrationsAssembly(migrationsAssembly));
+         .AddConfigurationStore(options =>
+         {
+           options.ConfigureDbContext = builder =>
+               builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                   sql => sql.MigrationsAssembly(migrationsAssembly));
+         })
+          // this adds the operational data from DB (codes, tokens, consents)
+          .AddOperationalStore(options =>
+          {
+            options.ConfigureDbContext = builder =>
+                builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                    sql => sql.MigrationsAssembly(migrationsAssembly));
 
-      // this enables automatic token cleanup. this is optional.
-      options.EnableTokenCleanup = true;
-      options.TokenCleanupInterval = 30;
+            // this enables automatic token cleanup. this is optional.
+            options.EnableTokenCleanup = true;
+            options.TokenCleanupInterval = 30;
 
-    })
-.AddProfileService<ProfileService>()
-;
-
+          })
+          .AddProfileService<ProfileService>();
+         // .AddRedirectUriValidator<RedirectUriValidator>(); use for subDomain
+         //Add Authentication for User APIs
+    /*  services.AddAuthentication()
+              .AddIdentityServerAuthentication("token", isAuth =>
+              {
+                isAuth.Authority = "base_address_of_identityserver";
+                isAuth.ApiName = "name_of_api";
+              });*/
 
       services.AddCors();
 
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    {
       if (env.IsDevelopment())
       {
         app.UseBrowserLink();
@@ -96,8 +106,9 @@ namespace IDServer
       // app.UseMiddleware<LogRequestMiddleware>();
 
       app.UseIdentityServer();
-
-      app.UseMvc(routes => {
+     
+      app.UseMvc(routes =>
+      {
         routes.MapRoute(
                   name: "default",
                   template: "{controller=Home}/{action=Index}/{id?}");
@@ -105,7 +116,8 @@ namespace IDServer
       //InitializeDatabase(app);
     }
 
-    private void InitializeDatabase(IApplicationBuilder app) {
+    private void InitializeDatabase(IApplicationBuilder app)
+    {
       using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
       {
         serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();

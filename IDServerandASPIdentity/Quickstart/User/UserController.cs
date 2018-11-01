@@ -46,7 +46,7 @@ namespace IDServer.Controllers
     public async Task<IActionResult> Add([FromBody] AddUserModel model) {
       if (ModelState.IsValid)
       {
-        var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName, TenantId = model.TenantId, IsMultiTenant = false, Role = model.Role };
+        var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName, TenantId = model.TenantId, IsMultiTenant = false, Role = model.Role,IsActive = model.IsActive};
 
         var result = await _userManager.CreateAsync(user);
         if (result.Succeeded)
@@ -118,7 +118,7 @@ namespace IDServer.Controllers
       //Check for the supplied code, it should match with the code generated for user
       if (result.Errors != null && result.Errors.Count() > 0)
       {
-        _logger.LogError("Unauthorized access to to the set password:" + user.Email);
+        _logger.LogError("Unauthorized access  to the set password:" + user.Email);
         return StatusCode(401);//Unauthorized
       }
 
@@ -298,5 +298,66 @@ namespace IDServer.Controllers
       return StatusCode(500);
     }
 
+    /// <summary>
+    /// Set Active User
+    /// 
+    /// </summary>
+    /// <param userid="">Identityserver userIdd</param>
+    /// <returns></returns>
+    [HttpPost]
+    [AllowAnonymous]
+    //[Authorize(AuthenticationSchemes = "token")]
+    public async Task<IActionResult> MarkUserActive(string userid)
+    {
+      if (string.IsNullOrEmpty(userid))
+      {
+        return StatusCode(422);
+      }
+      var user = await _userManager.FindByIdAsync(userid);
+      if (user == null)
+      {
+        // Don't reveal that the user does not exist
+        return Ok();
+      }
+      user.IsActive = true;
+      var result = await _userManager.UpdateAsync(user);
+      if (result.Succeeded)
+      {
+        _logger.LogInformation("User is set Active" + user.Email);
+        return Ok();
+      }
+      _logger.LogError("Error in setting  user properties");
+      return StatusCode(500);
+    }
+    /// <summary>
+    /// Set Active User
+    /// 
+    /// </summary>
+    /// <param userid="">Identityserver userIdd</param>
+    /// <returns></returns>
+    [HttpPost]
+    [AllowAnonymous]
+    public async Task<IActionResult> MarkUserInActive(string userid)
+    {
+      if (string.IsNullOrEmpty(userid))
+      {
+        return StatusCode(422);
+      }
+      var user = await _userManager.FindByIdAsync(userid);
+      if (user == null)
+      {
+        // Don't reveal that the user does not exist
+        return Ok();
+      }
+      user.IsActive = false;
+      var result = await _userManager.UpdateAsync(user);
+      if (result.Succeeded)
+      {
+        _logger.LogInformation("User is set In active" + user.Email);
+        return Ok();
+      }
+      _logger.LogError("Error in setting  user properties");
+      return StatusCode(500);
+    }
   }
 }

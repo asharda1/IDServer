@@ -15,5 +15,6 @@ namespace IDServer.Models
     public Guid TenantId { get; set; }
     public bool IsMultiTenant { get; set; }
     public int Role { get; set; }
+    public bool IsActive { get; set; }
   }
 }

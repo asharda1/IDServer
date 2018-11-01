@@ -41,7 +41,8 @@ namespace IDServer.UI
         IIdentityServerInteractionService interaction,
         IClientStore clientStore,
         IAuthenticationSchemeProvider schemeProvider,
-        IEventService events) {
+        IEventService events)
+    {
       _userManager = userManager;
       _signInManager = signInManager;
       _interaction = interaction;
@@ -54,7 +55,8 @@ namespace IDServer.UI
     /// Show login page
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Login(string returnUrl) {
+    public async Task<IActionResult> Login(string returnUrl)
+    {
       // build a model so we know what to show on the login page
       var vm = await BuildLoginViewModelAsync(returnUrl);
 
@@ -72,7 +74,8 @@ namespace IDServer.UI
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(LoginInputModel model, string button) {
+    public async Task<IActionResult> Login(LoginInputModel model, string button)
+    {
       if (button != "login")
       {
         // the user clicked the "cancel" button
@@ -96,24 +99,29 @@ namespace IDServer.UI
 
       if (ModelState.IsValid)
       {
-       // _signInManager.CheckPasswordSignInAsync(user,password,false) us this method to signin if we need to signin against a tenant.
-        var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
-        if (result.Succeeded)
+
+        // _signInManager.CheckPasswordSignInAsync(user,password,false) us this method to signin if we need to signin against a tenant.
+        var user = await _userManager.FindByNameAsync(model.Username);
+        var client = await _clientStore.FindClientByIdAsync(model.ClientId);
+        if (user != null && user.IsActive && IsValidClientUser(user, client))
         {
-          //[Object] result = [ObjectCollection].SingleOrDefault(u => u.[Email] == [Value] && u.TenantId=[value]) if need to get user bu email + tenantId
-          var user = await _userManager.FindByNameAsync(model.Username);
-          await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName));
-
-          // make sure the returnUrl is still valid, and if so redirect back to authorize endpoint or a local page
-          // the IsLocalUrl check is only necessary if you want to support additional local pages, otherwise IsValidReturnUrl is more strict
-          if (_interaction.IsValidReturnUrl(model.ReturnUrl) || Url.IsLocalUrl(model.ReturnUrl))
+          var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
+          if (result.Succeeded)
           {
-            return Redirect(model.ReturnUrl);
+            //[Object] result = [ObjectCollection].SingleOrDefault(u => u.[Email] == [Value] && u.TenantId=[value]) if need to get user bu email + tenantId
+            // var user = await _userManager.FindByNameAsync(model.Username);
+            await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName));
+
+            // make sure the returnUrl is still valid, and if so redirect back to authorize endpoint or a local page
+            // the IsLocalUrl check is only necessary if you want to support additional local pages, otherwise IsValidReturnUrl is more strict
+            if (_interaction.IsValidReturnUrl(model.ReturnUrl) || Url.IsLocalUrl(model.ReturnUrl))
+            {
+              return Redirect(model.ReturnUrl);
+            }
+
+            return Redirect("~/");
           }
-
-          return Redirect("~/");
         }
-
         await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials"));
 
         ModelState.AddModelError("", AccountOptions.InvalidCredentialsErrorMessage);
@@ -128,7 +136,8 @@ namespace IDServer.UI
     /// initiate roundtrip to external authentication provider
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> ExternalLogin(string provider, string returnUrl) {
+    public async Task<IActionResult> ExternalLogin(string provider, string returnUrl)
+    {
       if (AccountOptions.WindowsAuthenticationSchemeName == provider)
       {
         // windows authentication needs special handling
@@ -137,7 +146,8 @@ namespace IDServer.UI
       else
       {
         // start challenge and roundtrip the return URL and 
-        var props = new AuthenticationProperties() {
+        var props = new AuthenticationProperties()
+        {
           RedirectUri = Url.Action("ExternalLoginCallback"),
           Items =
             {
@@ -153,7 +163,8 @@ namespace IDServer.UI
     /// Post processing of external authentication
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> ExternalLoginCallback() {
+    public async Task<IActionResult> ExternalLoginCallback()
+    {
       // read external identity from the temporary cookie
       var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
       if (result?.Succeeded != true)
@@ -206,7 +217,8 @@ namespace IDServer.UI
     /// Show logout page
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Logout(string logoutId) {
+    public async Task<IActionResult> Logout(string logoutId)
+    {
       // build a model so the logout page knows what to display
       var vm = await BuildLogoutViewModelAsync(logoutId);
 
@@ -225,7 +237,8 @@ namespace IDServer.UI
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout(LogoutInputModel model) {
+    public async Task<IActionResult> Logout(LogoutInputModel model)
+    {
       // build a model so the logged out page knows what to display
       var vm = await BuildLoggedOutViewModelAsync(model.LogoutId);
 
@@ -256,13 +269,15 @@ namespace IDServer.UI
     /*****************************************/
     /* helper APIs for the AccountController */
     /*****************************************/
-    private async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl) {
+    private async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl)
+    {
       var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
       string clientId = "";
       if (context?.IdP != null)
       {
         // this is meant to short circuit the UI and only trigger the one external IdP
-        return new LoginViewModel {
+        return new LoginViewModel
+        {
           EnableLocalLogin = false,
           ReturnUrl = returnUrl,
           Username = context?.LoginHint,
@@ -276,7 +291,8 @@ namespace IDServer.UI
           .Where(x => x.DisplayName != null ||
                       (x.Name.Equals(AccountOptions.WindowsAuthenticationSchemeName, StringComparison.OrdinalIgnoreCase))
           )
-          .Select(x => new ExternalProvider {
+          .Select(x => new ExternalProvider
+          {
             DisplayName = x.DisplayName,
             AuthenticationScheme = x.Name
           }).ToList();
@@ -296,7 +312,8 @@ namespace IDServer.UI
         }
       }
 
-      return new LoginViewModel {
+      return new LoginViewModel
+      {
         AllowRememberLogin = AccountOptions.AllowRememberLogin,
         EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
         ReturnUrl = returnUrl,
@@ -306,14 +323,16 @@ namespace IDServer.UI
       };
     }
 
-    private async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model) {
+    private async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model)
+    {
       var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
       vm.Username = model.Username;
       vm.RememberLogin = model.RememberLogin;
       return vm;
     }
 
-    private async Task<LogoutViewModel> BuildLogoutViewModelAsync(string logoutId) {
+    private async Task<LogoutViewModel> BuildLogoutViewModelAsync(string logoutId)
+    {
       var vm = new LogoutViewModel { LogoutId = logoutId, ShowLogoutPrompt = AccountOptions.ShowLogoutPrompt };
 
       if (User?.Identity.IsAuthenticated != true)
@@ -336,11 +355,13 @@ namespace IDServer.UI
       return vm;
     }
 
-    private async Task<LoggedOutViewModel> BuildLoggedOutViewModelAsync(string logoutId) {
+    private async Task<LoggedOutViewModel> BuildLoggedOutViewModelAsync(string logoutId)
+    {
       // get context information (client name, post logout redirect URI and iframe for federated signout)
       var logout = await _interaction.GetLogoutContextAsync(logoutId);
 
-      var vm = new LoggedOutViewModel {
+      var vm = new LoggedOutViewModel
+      {
         AutomaticRedirectAfterSignOut = AccountOptions.AutomaticRedirectAfterSignOut,
         PostLogoutRedirectUri = logout?.PostLogoutRedirectUri,
         ClientName = string.IsNullOrEmpty(logout?.ClientName) ? logout?.ClientId : logout?.ClientName,
@@ -372,7 +393,8 @@ namespace IDServer.UI
       return vm;
     }
 
-    private async Task<IActionResult> ProcessWindowsLoginAsync(string returnUrl) {
+    private async Task<IActionResult> ProcessWindowsLoginAsync(string returnUrl)
+    {
       // see if windows auth has already been requested and succeeded
       var result = await HttpContext.AuthenticateAsync(AccountOptions.WindowsAuthenticationSchemeName);
       if (result?.Principal is WindowsPrincipal wp)
@@ -380,7 +402,8 @@ namespace IDServer.UI
         // we will issue the external cookie and then redirect the
         // user back to the external callback, in essence, tresting windows
         // auth the same as any other external authentication mechanism
-        var props = new AuthenticationProperties() {
+        var props = new AuthenticationProperties()
+        {
           RedirectUri = Url.Action("ExternalLoginCallback"),
           Items =
             {
@@ -418,7 +441,8 @@ namespace IDServer.UI
     }
 
     private async Task<(ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims)>
-        FindUserFromExternalProviderAsync(AuthenticateResult result) {
+        FindUserFromExternalProviderAsync(AuthenticateResult result)
+    {
       var externalUser = result.Principal;
 
       // try to determine the unique id of the external user (issued by the provider)
@@ -441,7 +465,8 @@ namespace IDServer.UI
       return (user, provider, providerUserId, claims);
     }
 
-    private async Task<ApplicationUser> AutoProvisionUserAsync(string provider, string providerUserId, IEnumerable<Claim> claims) {
+    private async Task<ApplicationUser> AutoProvisionUserAsync(string provider, string providerUserId, IEnumerable<Claim> claims)
+    {
       // create a list of claims that we want to transfer into our store
       var filtered = new List<Claim>();
 
@@ -480,7 +505,8 @@ namespace IDServer.UI
         filtered.Add(new Claim(JwtClaimTypes.Email, email));
       }
 
-      var user = new ApplicationUser {
+      var user = new ApplicationUser
+      {
         UserName = Guid.NewGuid().ToString(),
       };
       var identityResult = await _userManager.CreateAsync(user);
@@ -498,7 +524,8 @@ namespace IDServer.UI
       return user;
     }
 
-    private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps) {
+    private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
+    {
       // if the external system sent a session id claim, copy it over
       // so we can use it for single sign-out
       var sid = externalResult.Principal.Claims.FirstOrDefault(x => x.Type == JwtClaimTypes.SessionId);
@@ -515,12 +542,25 @@ namespace IDServer.UI
       }
     }
 
-    private void ProcessLoginCallbackForWsFed(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps) {
+    private void ProcessLoginCallbackForWsFed(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
+    {
     }
 
-    private void ProcessLoginCallbackForSaml2p(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps) {
+    private void ProcessLoginCallbackForSaml2p(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
+    {
     }
-
+    private bool IsValidClientUser(ApplicationUser user, Client client)
+    {
+      if (user == null || !user.IsActive) return false;
+      string appKeyValue = "";
+      if (client == null) return true;
+      client.Properties.TryGetValue("AppKey", out appKeyValue);
+      if (string.IsNullOrEmpty(appKeyValue)) return true;
+      if (appKeyValue == "pub" && (user.Role == 1 || user.Role == 2)) return true;
+      if (appKeyValue == "biz" && (user.Role == 3 || user.Role == 4)) return true;
+      if (appKeyValue == "part" && (user.Role == 5 || user.Role == 6)) return true;
+      return false;
+    }
 
   }
 }
