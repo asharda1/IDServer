@@ -552,13 +552,13 @@ namespace IDServer.UI
     private bool IsValidClientUser(ApplicationUser user, Client client)
     {
       if (user == null || !user.IsActive) return false;
-      string appKeyValue = "";
+      string appTypeValue = "";
       if (client == null) return true;
-      client.Properties.TryGetValue("AppKey", out appKeyValue);
-      if (string.IsNullOrEmpty(appKeyValue)) return true;
-      if (appKeyValue == "pub" && (user.Role == 1 || user.Role == 2)) return true;
-      if (appKeyValue == "biz" && (user.Role == 3 || user.Role == 4)) return true;
-      if (appKeyValue == "part" && (user.Role == 5 || user.Role == 6)) return true;
+      client.Properties.TryGetValue("AppType", out appTypeValue);
+      if (string.IsNullOrEmpty(appTypeValue)) return true;
+      if (appTypeValue == "pub" && (user.Role == 1 || user.Role == 2)) return true;
+      if (appTypeValue == "biz" && (user.Role == 3 || user.Role == 4)) return true;
+      if (appTypeValue == "part" && (user.Role == 5 || user.Role == 6)) return true;
       return false;
     }
 
