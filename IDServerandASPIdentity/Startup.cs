@@ -73,8 +73,8 @@ namespace IDServer
             options.TokenCleanupInterval = 30;
 
           })
-          .AddProfileService<ProfileService>();
-         // .AddRedirectUriValidator<RedirectUriValidator>(); use for subDomain
+          .AddProfileService<ProfileService>()
+          .AddRedirectUriValidator<RedirectUriValidator>(); //use for subDomain
          //Add Authentication for User APIs
     /*  services.AddAuthentication()
               .AddIdentityServerAuthentication("token", isAuth =>
