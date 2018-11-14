@@ -20,6 +20,16 @@
     <Compile Remove="Data\Migrations\ApplicationDbContextModelSnapshot.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="certificate\Wildcard-2018.pfx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="certificate\Wildcard-2018.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="IdentityServer4" Version="2.3.0-preview1-update2" />
