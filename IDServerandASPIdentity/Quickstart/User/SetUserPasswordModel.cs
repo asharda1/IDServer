@@ -26,5 +26,14 @@ namespace IDServer.Models
     public string ConfirmPassword { get; set; }
 
     public string StatusMessage { get; set; }
+
+    public string RedirectUrl
+    {
+      get; set;
+    }
+    public string Code
+    {
+      get; set;
+    }
   }
 }

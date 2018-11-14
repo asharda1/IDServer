@@ -46,18 +46,23 @@ namespace IDServer.Controllers
     public async Task<IActionResult> Add([FromBody] AddUserModel model) {
       if (ModelState.IsValid)
       {
-        var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName, TenantId = model.TenantId, IsMultiTenant = false, Role = model.Role,IsActive = model.IsActive};
+        var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName, TenantId = model.TenantId, IsMultiTenant = false, Role = model.Role, IsActive = model.IsActive };
 
         var result = await _userManager.CreateAsync(user);
         if (result.Succeeded)
         {
           _logger.LogInformation("User created a new account.");
-          var id = user.Id;
-          //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+          //ASha SHarda - Commented id code as now login flow will be by email code
+          // var id = user.Id;
+          // return Ok(id);
+          //Asha Sharda - Uncommented code for email code flow.
+          var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
           ////  var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
           //// await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
-          //code = HttpUtility.UrlEncode(code); //Do URL encoding as this will be part of URL
-          return Ok(id);
+          AddUserResponseModel UserResponse = new AddUserResponseModel();
+          UserResponse.Code = HttpUtility.UrlEncode(code); //Do URL encoding as this will be part of URL
+          UserResponse.UserId = user.Id;
+          return Ok(UserResponse);
         }
         else
         {
@@ -81,13 +86,9 @@ namespace IDServer.Controllers
     [HttpGet]
     [AllowAnonymous]
     public IActionResult SetPassword(string code = null, string returnUrl = null) {
-      /*   if (code == null)
-       {
-         throw new ApplicationException("A code must be supplied for set password operation.");
-       }*/
-      ViewData["ReturnUrl"] = returnUrl;
-      ViewData["code"] = code;
       var model = new SetUserPasswordModel { };
+      model.Code = code ?? throw new ApplicationException("A code must be supplied for set password operation.");
+      model.RedirectUrl = returnUrl;
       return View(model);
     }
 
@@ -102,7 +103,7 @@ namespace IDServer.Controllers
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SetPassword([FromBody]SetUserPasswordModel model, [FromQuery]string code = null, [FromQuery] string returnUrl = null) {
+    public async Task<IActionResult> SetPassword(SetUserPasswordModel model) {
       if (!ModelState.IsValid)
       {
         return View(model);
@@ -111,25 +112,32 @@ namespace IDServer.Controllers
       if (user == null || !string.IsNullOrEmpty(user.PasswordHash))
       {
         // Don't reveal that the user does not exist
-        return StatusCode(500);
+        // return StatusCode(500);
+        ModelState.AddModelError("", "Email address does not exists");
+        return View(model);
       }
 
-      var result = await _userManager.ConfirmEmailAsync(user, code);
+      var result = await _userManager.ConfirmEmailAsync(user, model.Code);
       //Check for the supplied code, it should match with the code generated for user
       if (result.Errors != null && result.Errors.Count() > 0)
       {
         _logger.LogError("Unauthorized access  to the set password:" + user.Email);
-        return StatusCode(401);//Unauthorized
+        //return StatusCode(401);//Unauthorized
+        ModelState.AddModelError("", "Unauthorized access  to the set password.");
+        return View(model);
       }
 
       result = await _userManager.AddPasswordAsync(user, model.NewPassword);
       if (result.Succeeded)
       {
         _logger.LogInformation("Password is set for:" + user.Email);
-        return Ok();
+        return Redirect(model.RedirectUrl);
       }
       _logger.LogError("Error in adding password");
-      return StatusCode(500);
+      //return StatusCode(500);
+      ModelState.AddModelError("", "Error in adding password");
+      return View(model);
+
     }
 
 
@@ -193,16 +201,16 @@ namespace IDServer.Controllers
       _logger.LogError("Error in updating  password");
       return StatusCode(500);
     }
-   
-[HttpGet]
-[AllowAnonymous]
+
+    [HttpGet]
+    [AllowAnonymous]
     // GET: /AccountAdmin/ResetPassword
-    public ActionResult ResetPassword([FromQuery] string code, [FromQuery] string userId,[FromQuery] string returnUrl) {
+    public ActionResult ResetPassword([FromQuery] string code, [FromQuery] string userId, [FromQuery] string returnUrl) {
       if (code == null)
       {
         return StatusCode(400);//Bad request
       }
-      ResetPasswordViewModel model = new ResetPasswordViewModel() { Code = code, UserId = userId,ReturnUrl =returnUrl };
+      ResetPasswordViewModel model = new ResetPasswordViewModel() { Code = code, UserId = userId, ReturnUrl = returnUrl };
       return View(model);
     }
 
@@ -215,7 +223,7 @@ namespace IDServer.Controllers
       {
         return View(model);
       }
-      var user =await _userManager.FindByIdAsync(model.UserId);
+      var user = await _userManager.FindByIdAsync(model.UserId);
       if (user == null)
         return StatusCode(400);
       ViewData["TenantId"] = user.TenantId;
@@ -229,8 +237,8 @@ namespace IDServer.Controllers
 
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult ForgotPassword([FromQuery] string tenantId = null, [FromQuery] string returnUrl= null ) {
-      ForgotPasswordViewModel model = new ForgotPasswordViewModel() { TenantId = tenantId ,ReturnUrl = returnUrl};
+    public ActionResult ForgotPassword([FromQuery] string tenantId = null, [FromQuery] string returnUrl = null) {
+      ForgotPasswordViewModel model = new ForgotPasswordViewModel() { TenantId = tenantId, ReturnUrl = returnUrl };
       return View(model);
     }
 
@@ -258,7 +266,7 @@ namespace IDServer.Controllers
        }, protocol: Request.Url.Scheme);
            await _userManager.SendEmailAsync(user.Id, "Reset Password",
        "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");*/
-       
+
         return View("ForgotPasswordConfirmation");
       }
 
@@ -307,8 +315,7 @@ namespace IDServer.Controllers
     [HttpPost]
     [AllowAnonymous]
     //[Authorize(AuthenticationSchemes = "token")]
-    public async Task<IActionResult> MarkUserActive(string userid)
-    {
+    public async Task<IActionResult> MarkUserActive(string userid) {
       if (string.IsNullOrEmpty(userid))
       {
         return StatusCode(422);
@@ -337,8 +344,7 @@ namespace IDServer.Controllers
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<IActionResult> MarkUserInActive(string userid)
-    {
+    public async Task<IActionResult> MarkUserInActive(string userid) {
       if (string.IsNullOrEmpty(userid))
       {
         return StatusCode(422);
