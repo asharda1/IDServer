@@ -311,7 +311,7 @@ namespace IDServer.UI
           }
         }
       }
-
+      var clientModel = context?.AcrValues;
       return new LoginViewModel
       {
         AllowRememberLogin = AccountOptions.AllowRememberLogin,

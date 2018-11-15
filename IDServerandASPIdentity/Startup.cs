@@ -18,6 +18,7 @@ using IdentityServer4.EntityFramework.Mappers;
 using IDServerandASPIdentity;
 using System.Security.Cryptography.X509Certificates;
 using IdentityServer4.Services;
+using IdentityServer4.Validation;
 
 namespace IDServer
 {
@@ -47,6 +48,7 @@ namespace IDServer
       // Add application services.
       services.AddTransient<IEmailSender, EmailSender>();
       services.AddTransient<IProfileService, ProfileService>();
+      services.AddTransient<IRedirectUriValidator, RedirectUriValidator>();
       services.AddMvc();
       // configure identity server with in-memory stores, keys, clients and scopes
       services.AddIdentityServer()

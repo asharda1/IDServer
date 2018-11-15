@@ -43,11 +43,14 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <p>
-                            <a asp-controller="User"
-                               asp-action="ForgotPassword" asp-route-tenantId="0000-0000-0000" asp-route-returnUrl="@Model.ReturnUrl">Forgot Your Password?</a>
-                        </p>
+                        <p><a class="handpointer" data-toggle="modal" data-target="#forgotPassword">Forgot Your Password?</a></p>
                     </div>
+                    <!--  <div class="form-group">
+            <p>
+                <a asp-controller="User"
+                   asp-action="ForgotPassword" asp-route-tenantId="0000-0000-0000" asp-route-returnUrl="@Model.ReturnUrl">Forgot Your Password?</a>
+            </p>
+        </div>-->
                     @*@if (Model.AllowRememberLogin)
             {
                 <div class="form-group login-remember">
@@ -67,40 +70,44 @@
 
                 </form>
 
-            </div>
+                </div>
 
-        }
-        @if (Model.VisibleExternalProviders.Any())
-        {
-            <div class="col-md-6 col-sm-6 external-providers">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">External Login</h3>
-                    </div>
-                    <div class="panel-body">
-                        <ul class="list-inline">
-                            @foreach (var provider in Model.VisibleExternalProviders)
-                            {
-                                <li>
-                                    <a class="btn btn-default"
-                                       asp-action="ExternalLogin"
-                                       asp-route-provider="@provider.AuthenticationScheme"
-                                       asp-route-returnUrl="@Model.ReturnUrl">
-                                        @provider.DisplayName
-                                    </a>
-                                </li>
-                            }
-                        </ul>
+            }
+            @if (Model.VisibleExternalProviders.Any())
+            {
+                <div class="col-md-6 col-sm-6 external-providers">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">External Login</h3>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="list-inline">
+                                @foreach (var provider in Model.VisibleExternalProviders)
+                                {
+                                    <li>
+                                        <a class="btn btn-default"
+                                           asp-action="ExternalLogin"
+                                           asp-route-provider="@provider.AuthenticationScheme"
+                                           asp-route-returnUrl="@Model.ReturnUrl">
+                                            @provider.DisplayName
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-        @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
-        {
-            <div class="alert alert-warning">
-                <strong>Invalid login request</strong>
-                There are no login schemes configured for this client.
-            </div>
-        }
-    </section>
-</div>
+            }
+            @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
+            {
+                <div class="alert alert-warning">
+                    <strong>Invalid login request</strong>
+                    There are no login schemes configured for this client.
+                </div>
+            }
+        </section>
+    </div>
+
+<div class="modal fade" id="forgotPassword" tabindex="-1" role="dialog">
+    @Html.Partial("_ForgotPassword");
+</div><!-- /.modal -->
