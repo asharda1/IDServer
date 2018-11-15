@@ -5,24 +5,30 @@
     <section class="login-section">
         <div class="login-logo">
             @Html.Partial("_ValidationSummary")
-            <img src="~/images/logo.png" />
+            @if (Model.ClientTenantModel.LogoUrl != "") {
+                <img src=@Model.ClientTenantModel.LogoUrl />
+            }
+            @if (Model.ClientTenantModel.LogoUrl == "") {
+                <img src="~/images/logo.png" />
+            }
         </div>
         <div class="login-welcome-text">
             Welcome to eWorkplace Apps <br>
-            @if (Model.ClientId == "pub-app")
-            {
-                <span>Publisher Portal</span>}
-            @if (Model.ClientId == "biz-app")
-            {
-                <span>Business Portal</span>}
-            @if (Model.ClientId == "part-app")
-            {
-                <span>Partner Portal</span>
-            }
-            @if (Model.ClientId == "")
-            {
-                <span>Identity Server Ewapps</span>
-            }
+            <!--@if (Model.ClientId == "pub-app")
+       {
+           <span>Publisher Portal</span>}
+       @if (Model.ClientId == "biz-app")
+       {
+           <span>Business Portal</span>}
+       @if (Model.ClientId == "part-app")
+       {
+           <span>Partner Portal</span>
+       }
+       @if (Model.ClientId == "")
+       {
+           <span>Identity Server Ewapps</span>
+       }-->
+            <span>@Model.ClientTenantModel.TenantName</span>
         </div>
         @if (Model.EnableLocalLogin)
         {

@@ -6,10 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace IDServer.Models
-{
-  public class LoginViewModel : LoginInputModel
-  {
+namespace IDServer.Models {
+  public class LoginViewModel : LoginInputModel {
     public bool AllowRememberLogin
     {
       get; set;
@@ -18,12 +16,15 @@ namespace IDServer.Models
     {
       get; set;
     }
-//* to customize the login page for branding - Ewapps
+    //* to customize the login page for branding - Ewapps
     public string ClientId
     {
       get; set;
     }
-
+    public ClientTenantModel ClientTenantModel
+    {
+      get; set;
+    }
     public IEnumerable<ExternalProvider> ExternalProviders
     {
       get; set;
