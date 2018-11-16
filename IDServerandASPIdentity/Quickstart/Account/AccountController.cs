@@ -95,7 +95,7 @@ namespace IDServer.UI {
         // _signInManager.CheckPasswordSignInAsync(user,password,false) us this method to signin if we need to signin against a tenant.
         var user = await _userManager.FindByNameAsync(model.Username);
         var client = await _clientStore.FindClientByIdAsync(model.ClientId);
-        if (user != null && user.IsActive && IsValidClientUser(user, client)) {
+        if (user != null && user.IsActive && IsValidClientUser(user, client) && IsValidTenantUser(user,model.TenantId)){
           var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
           if (result.Succeeded) {
             //[Object] result = [ObjectCollection].SingleOrDefault(u => u.[Email] == [Value] && u.TenantId=[value]) if need to get user bu email + tenantId
@@ -511,6 +511,11 @@ namespace IDServer.UI {
       if (appTypeValue == "biz" && (user.Role == 3 || user.Role == 4)) return true;
       if (appTypeValue == "part" && (user.Role == 5 || user.Role == 6)) return true;
       return false;
+    }
+
+    private bool IsValidTenantUser(ApplicationUser user, string TenantId) {
+      if (user == null || !user.IsActive || user.TenantId.ToString() != TenantId) return false;
+      return true;
     }
 
   }

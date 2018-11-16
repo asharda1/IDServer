@@ -36,6 +36,7 @@
                 <form asp-route="Login">
                     <input type="hidden" asp-for="ReturnUrl" />
                     <input type="hidden" asp-for="ClientId" />
+                    <input type="hidden" asp-for="ClientTenantModel.TenantId" />
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon"><i class="glyphicon glyphicon-user"></i></div>
@@ -52,11 +53,11 @@
                         <p><a class="handpointer" data-toggle="modal" data-target="#forgotPassword">Forgot Your Password?</a></p>
                     </div>
                     <!--  <div class="form-group">
-            <p>
-                <a asp-controller="User"
-                   asp-action="ForgotPassword" asp-route-tenantId="0000-0000-0000" asp-route-returnUrl="@Model.ReturnUrl">Forgot Your Password?</a>
-            </p>
-        </div>-->
+        <p>
+            <a asp-controller="User"
+               asp-action="ForgotPassword" asp-route-tenantId="0000-0000-0000" asp-route-returnUrl="@Model.ReturnUrl">Forgot Your Password?</a>
+        </p>
+    </div>-->
                     @*@if (Model.AllowRememberLogin)
             {
                 <div class="form-group login-remember">

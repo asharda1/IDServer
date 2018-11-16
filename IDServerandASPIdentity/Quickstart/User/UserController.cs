@@ -109,14 +109,18 @@ namespace IDServer.Controllers
         return View(model);
       }
       var user = await _userManager.FindByEmailAsync(model.Email);
-      if (user == null || !string.IsNullOrEmpty(user.PasswordHash))
+      if (user == null)
       {
         // Don't reveal that the user does not exist
         // return StatusCode(500);
-        ModelState.AddModelError("", "Email address does not exists");
+        ModelState.AddModelError("", "Email address does not exists.");
         return View(model);
       }
-
+      if (!string.IsNullOrEmpty(user.PasswordHash)) {
+        ModelState.AddModelError("", "Password already set for this email address.");
+        return View(model);
+      }
+ 
       var result = await _userManager.ConfirmEmailAsync(user, model.Code);
       //Check for the supplied code, it should match with the code generated for user
       if (result.Errors != null && result.Errors.Count() > 0)

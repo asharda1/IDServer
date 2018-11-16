@@ -15,5 +15,9 @@ namespace IDServer.Models
     public bool RememberLogin { get; set; }
     public string ReturnUrl { get; set; }
     public string ClientId { get; set; }
+    public string TenantId
+    {
+      get; set;
+    }
   }
 }
