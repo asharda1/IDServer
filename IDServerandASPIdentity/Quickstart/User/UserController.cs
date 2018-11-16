@@ -253,11 +253,13 @@ namespace IDServer.Controllers
       {
         ViewData["TenantId"] = model.TenantId;
         ViewData["ReturnUrl"] = model.ReturnUrl;
+        model.ConfirmationMessage = false;
         var user = await _userManager.FindByNameAsync(model.Email);
         if (user == null)
         {
           // Don't reveal that the user does not exist or is not confirmed
-          return View("ForgotPasswordConfirmation");
+          model.ConfirmationMessage = true;
+          return View(model);
         }
 
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -270,12 +272,34 @@ namespace IDServer.Controllers
        }, protocol: Request.Url.Scheme);
            await _userManager.SendEmailAsync(user.Id, "Reset Password",
        "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");*/
-
+        
         return View("ForgotPasswordConfirmation");
       }
 
       // If we got this far, something failed, redisplay form
       return View(model);
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPasswordPartial(string email) {
+        var user = await _userManager.FindByNameAsync(email);
+        if (user == null) {
+        // Don't reveal that the user does not exist or is not confirmed
+        return Json("EmailNotFound");
+      }
+
+        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+      /*   var callbackUrl = Url.Action("ResetPassword", "Account",
+     new
+     {
+       UserId = user.Id,
+       TenantId = user.TenantId,
+       code = code
+     }, protocol: Request.Url.Scheme);
+         await _userManager.SendEmailAsync(user.Id, "Reset Password",
+     "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");*/
+      return Json("Done");
     }
 
 

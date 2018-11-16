@@ -283,17 +283,17 @@ namespace IDServer.UI {
       //Client sends extra parameter value in the request by Arc_values, Concatinate the values in 
       //Single varibale and thendo URLDecode and values can be urlEncoded by clients.
       var clientModel = context?.AcrValues;
-      string clientModel1 = "";
-      foreach (string s in clientModel) {
-        clientModel1 += " " + s;
-      }
-      //var acrValues = context?.AcrValues.ToDictionary(v => v.Split(':').GetValue(0), v => WebUtility.UrlDecode(v.Split(':').GetValue(1).ToString()));
-
       ClientTenantModel model = new ClientTenantModel();
-      if (clientModel1 != "") {
-        model = JsonConvert.DeserializeObject<ClientTenantModel>(WebUtility.UrlDecode(clientModel1));
+      string clientModel1 = "";
+      if (clientModel != null) {
+        foreach (string s in clientModel) {
+          clientModel1 += " " + s;
+        }
+        //var acrValues = context?.AcrValues.ToDictionary(v => v.Split(':').GetValue(0), v => WebUtility.UrlDecode(v.Split(':').GetValue(1).ToString()));
+        if (clientModel1 != "") {
+          model = JsonConvert.DeserializeObject<ClientTenantModel>(WebUtility.UrlDecode(clientModel1));
+        }
       }
-
       return new LoginViewModel {
         AllowRememberLogin = AccountOptions.AllowRememberLogin,
         EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,

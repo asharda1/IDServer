@@ -24,6 +24,10 @@
     {
       get; set;
     }
+    public bool ConfirmationMessage
+    {
+      get; set;
+    }
   }
   }
 

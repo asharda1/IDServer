@@ -116,5 +116,5 @@
     </div>
 
 <div class="modal fade" id="forgotPassword" tabindex="-1" role="dialog">
-    @Html.Partial("_ForgotPassword");
+    @Html.Partial("_ForgotPassword", new ForgotPasswordViewModel { TenantId = Model.TenantId})
 </div><!-- /.modal -->
