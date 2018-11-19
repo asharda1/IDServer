@@ -282,9 +282,9 @@ namespace IDServer.Controllers
 
     [HttpPost]
     [AllowAnonymous]
-    public async Task<IActionResult> ForgotPasswordPartial(string email) {
-        var user = await _userManager.FindByNameAsync(email);
-        if (user == null) {
+    public async Task<IActionResult> ForgotPasswordPartial([FromBody] ForgotPasswordViewModel model) {
+        var user = await _userManager.FindByNameAsync(model.Email);
+        if (user == null || user.TenantId.ToString()!=model.TenantId) {
         // Don't reveal that the user does not exist or is not confirmed
         return Json("EmailNotFound");
       }

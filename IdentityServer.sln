@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2015
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IDServerandASPIdentity", "IDServerandASPIdentity\IDServerandASPIdentity.csproj", "{9D92F270-ED08-4D77-87B0-8898B27FAD15}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EwApps.IdentityServer", "IDServerandASPIdentity\EwApps.IdentityServer.csproj", "{9D92F270-ED08-4D77-87B0-8898B27FAD15}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
